@@ -1,0 +1,253 @@
+#usda 1.0
+(
+    """ 
+    NAIF SPICE-related schemas.
+    """
+    subLayers = [
+        @usd/schema.usda@,
+        @usdGeom/schema.usda@
+    ]
+) 
+
+over "GLOBAL" (
+    customData = {
+        string libraryName       = "spiceOpsXform"
+        string libraryPath       = "."
+        string libraryPrefix     = "spiceOpsXform"
+        bool skipCodeGeneration  = true
+    }
+) {
+}
+
+class "SpiceObserverAPI" (
+    doc = """ Attributes to imbue a prim with SPICE observer properties. """
+    inherits = </APISchemaBase>
+    customData = {
+#        string className = "SpiceObserver"
+        token apiSchemaType = "singleApply"
+    }
+    prepend apiSchemas = ["SpiceObjectAPI"]
+)  
+{
+    double spice:et = 0.0 (
+        customData = {
+            string apiName = "et"
+        }
+        doc = "Ephemeris time"
+    )
+    uniform string spice:abcorr = "NONE" (
+        customData = {
+            string apiName = "abcorr"
+        }
+        doc = "Light-time abberation correction"
+    )
+    rel spice:kernelPoolRel (
+        customData = {
+            string apiName = "kernelPoolRel"
+        }
+        doc = """Stage path to kernel pool prim"""
+    )
+}
+    
+class "SpiceKernelPoolAPI" (
+    doc = """ Single attribute to hold a list of SPICE kernel pool paths. """
+    # Inherits from </SimplePrim> defined in simple.usda.
+    inherits = </APISchemaBase>
+    customData = {
+#        string className = "SpiceKernelPool"
+        token apiSchemaType = "singleApply"
+    }
+)  
+{
+    uniform asset[] spice:kernels (
+        doc = """List of kernel files to load and read SPICE data from"""
+        customData = {
+            string apiName = "kernels"
+        }
+    )
+}
+
+class "SpiceBodyAPI" (
+    doc = """
+    Combine SPICE transform attributes with an observerRel reference to an observer,
+    and optional radius and gravitational parameter attributes to express the notion
+    of a SPICE body.
+    """
+    inherits = </APISchemaBase>
+    customData = {
+        token apiSchemaType = "singleApply"
+    }
+    prepend apiSchemas = ["SpiceObjectAPI"]
+)
+{
+    uniform double3 spice:radii (
+        customData = {
+            string apiName = "radii"
+        }
+        doc = "Ellipsoid radii of SPICE body, if exists"
+    )
+    uniform double spice:gm (
+        customData = {
+            string apiName = "gm"
+        }
+        doc = "Gravitational parameter of SPICE body, if it exists"
+    )
+    rel spice:observerRel (
+        customData = {
+            string apiName = "observerRel"
+        }
+        doc = "Stage path to SPICE observer prim"
+    )
+}
+
+class "SpiceTrailAPI"
+(
+    inherits = </APISchemaBase>
+    customData = {
+        token apiSchemaType = "singleApply"
+    }
+    prepend apiSchemas = ["SpicePointsAPI"]
+)
+{
+    string spice:trail:method (
+        customData = {
+            string apiName = "spiceTrailMethod"
+        }
+        doc = "Algorithm that defines the trail point locations.  Options are 'orbital', 'distance', 'time', 'etrange'"
+    )
+    int spice:trail:samples (
+        customData = {
+            string apiName = "spiceTrailSamples"
+        }
+        doc = "Number of samples to use during trail generation"
+    )
+    double spice:trail:density = 1.41 (
+        customData = {
+            string spiceUnit = "kg/m3"
+        }
+        doc = "When method is orbital and a GM parameter on the observing body can't be found, use this, along with radius, to generate an estimated GM parameter."
+    )
+    double spice:trail:radius = 696000 (
+        customData = {
+            string spiceUnit = "km"
+        }
+        doc = "When method is orbital and a GM parameter on the observing body can't be found, use this, along with radius, to generate an estimated GM parameter."
+    )
+    double spice:trail:distance (
+        customData = {
+            string spiceUnit = "km"
+        }
+        doc = "when method is 'distance', length in kilometers behind the starting epoch to draw the trail to."
+    )
+    double spice:trail:daysbefore (
+        customData = {
+            string spiceUnit = "days"
+        }
+        doc = "When method is 'time', length in days behind the central ephemeris time."
+    )
+    double spice:trail:daysafter (
+        customData = {
+            string spiceUnit = "days"
+        }
+        doc = "When method is 'time', length in days ahead of the central ephemeris time."
+    )
+    double spice:trail:etstart (
+        customData = {
+            string spiceUnit = "seconds"
+        }
+        doc = "When method is 'etrange', trail start ephemeris time."
+    )
+    double spice:trail:etend (
+        customData = {
+            string spiceUnit = "seconds"
+        }
+        doc = "When method is 'etrange', trail end ephemeris time."
+    )
+    bool spice:trail:targetIsOrigin (
+        doc = "Whether to center the first point on the target body."
+    )
+}
+
+class "SpicePointsAPI"
+(
+    inherits = </APISchemaBase>
+    customData = {
+        token apiSchemaType = "singleApply"
+    }
+    prepend apiSchemas = ["SpiceObjectAPI"]
+)
+{
+    # uniform string spice:frame (
+    #     customData = {
+    #         string apiName = "frame"
+    #     }
+    #     doc = "SPICE frame"
+    # )
+    # uniform string spice:unit (
+    #     customData = {
+    #         string apiName = "unit"
+    #     }
+    #     doc = "Scale unit"
+    # )
+    double[] spice:et (
+        customData = {
+            string apiName = "et"
+        }
+        doc = "Ephemeris time array, with a value for each point."
+    )
+    rel spice:observerRel (
+        customData = {
+            string apiName = "observerRel"
+        }
+        doc = "Stage path to SPICE observer prim"
+    )
+    uniform string spice:observer (
+        customData = {
+            string apiName = "observer"
+        }
+        doc = "SPICE observer name"
+    )
+    uniform string spice:refframe (
+        customData = {
+            string apiName = "referenceFrame"
+        }
+        doc = "SPICE reference frame"
+    )
+    uniform string spice:refunit (
+        customData = {
+            string apiName = "referenceUnit"
+        }
+        doc = "Scale reference unit"
+    )
+}
+
+# Define a SPICE object as a prim with "body", "frame" and "unit" attributes.
+class "SpiceObjectAPI"
+(
+    inherits = </APISchemaBase>
+    customData = {
+        token apiSchemaType = "singleApply"
+    }
+#    prepend apiSchemas = ["SpiceTargetAPI"]
+)
+{
+    uniform string spice:body (
+        customData = {
+            string apiName = "body"
+        }
+        doc = "SPICE body"
+    )
+    uniform string spice:frame (
+        customData = {
+            string apiName = "frame"
+        }
+        doc = "SPICE frame"
+    )
+    uniform string spice:unit (
+        customData = {
+            string apiName = "unit"
+        }
+        doc = "Scale unit"
+    )
+}
+
