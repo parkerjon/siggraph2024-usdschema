@@ -5,4 +5,6 @@ This USD schema is codeless and does not need to be compiled.  See the OpenUSD i
 
 https://openusd.org/release/tut_generating_new_schema.html
 
+Correspnding example USD file TBD.
+
 This is an as-is production tool and has not been generalized for wide use, so some AMNH-specific declarations are still in-place.
